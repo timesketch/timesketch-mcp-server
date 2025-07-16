@@ -180,11 +180,11 @@ async def search_timesketch_events_substrings(
             continue
 
         if regex:
-            terms.append(f"message.keyword:/.*{substring}.*/")
+            terms.append(f"/.*{substring}.*/")
         else:
             for char in RESERVED_CHARS:
                 substring = substring.replace(char, f"\\{char}")
-            terms.append(f"message.keyword:*{substring}*")
+            terms.append(f"*{substring}*")
 
     query = boolean_operator.join(terms)
     try:
