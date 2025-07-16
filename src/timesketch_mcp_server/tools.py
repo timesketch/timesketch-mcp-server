@@ -2,6 +2,7 @@ from typing import Any, Optional
 
 from .utils import get_timesketch_client
 from timesketch_api_client import aggregation, search
+from collections import defaultdict
 
 from fastmcp import FastMCP
 
@@ -33,13 +34,16 @@ RESERVED_CHARS = [
 ]
 
 
-def _run_field_bucket_aggregation(sketch: Any, field: str) -> list[dict[str, int]]:
+def _run_field_bucket_aggregation(
+    sketch: Any, field: str, limit: int = 10000
+) -> list[dict[str, int]]:
     """
     Helper function to run a field bucket aggregation on a Timesketch sketch.
 
     Args:
         sketch: The Timesketch sketch object.
         field: The field to aggregate on.
+        limit: The maximum number of buckets to return. Defaults to 10000.
 
     Returns:
         A list of dictionaries containing the field bucket aggregation results.
@@ -48,7 +52,7 @@ def _run_field_bucket_aggregation(sketch: Any, field: str) -> list[dict[str, int
         aggregator_name="field_bucket",
         aggregator_parameters={
             "field": field,
-            "limit": "10000",
+            "limit": limit,
         },
     )
     return aggregation_result.data.get("objects")[0]["field_bucket"]["buckets"]
@@ -88,6 +92,38 @@ async def count_distinct_field_values(
 
     sketch = get_timesketch_client().get_sketch(sketch_id)
     return _run_field_bucket_aggregation(sketch, field)
+
+
+@mcp.tool()
+async def discover_fields_for_datatype(
+    self, sketch_id: int, data_type: str
+) -> list[str]:
+    """Discover fields for a specific data type in a Timesketch sketch.
+
+    Args:
+        sketch_id: The ID of the Timesketch sketch to discover fields from.
+        data_type: The data type to discover fields for.
+
+    Returns:
+        A list of field names that are present in the events of the specified data type.
+    """
+
+    events = _do_timesketch_search(
+        sketch_id=sketch_id, query=f'data_type:"{data_type}"', limit=1000, sort="desc"
+    )
+    fields = defaultdict(dict)
+    sketch = get_timesketch_client().get_sketch(sketch_id)
+    for event in events:
+        for key in event.keys():
+            if event["data_type"] in fields:
+                continue
+
+            breakpoint()
+            fields[event["data_type"]] = _run_field_bucket_aggregation(
+                sketch, key, limit=10
+            )
+
+    return list(fields)
 
 
 @mcp.tool()
