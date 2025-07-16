@@ -96,11 +96,10 @@ async def search_timesketch_events_substrings(
     substrings: list[str],
     regex: bool = False,
     boolean_operator: str = "AND",
-    limit: Optional[int] = None,
     sort: str = "desc",
     starred: bool = False,
 ) -> list[dict[str, Any]]:
-    """Searches timesketch events for specific substrings in the event messages.
+    """Search a Timesketch sketch and return a list of event dictionaries.
 
     This is the preferred method to use when searching for specific substrings in
     event messages.
@@ -116,8 +115,6 @@ async def search_timesketch_events_substrings(
             simple substrings. Defaults to False.
         boolean_operator: The boolean operator to use for combining multiple
             substring queries. Must be one of "AND" or "OR". Defaults to "AND".
-        limit: Optional maximum number of events to return. DANGEROUS: might
-            skip important events, do not use unless explicitly needed.
         sort: Sort order for datetime field, either "asc" or "desc". Default is "desc".
             Useful for getting the most recent or oldest events.
         starred: If True, only return starred events. If False, return all events.
@@ -158,7 +155,6 @@ async def search_timesketch_events_substrings(
         return _do_timesketch_search(
             sketch_id=sketch_id,
             query=query,
-            limit=limit,
             sort=sort,
             starred=starred,
         )
@@ -170,12 +166,11 @@ async def search_timesketch_events_substrings(
 async def search_timesketch_events_advanced(
     sketch_id: int,
     query: str,
-    limit: Optional[int] = None,
     sort: str = "desc",
     starred: bool = False,
 ) -> list[dict[str, Any]] | str:
     """
-    Search a Timesketch sketch and return a list of event dictionaries.
+    Search a Timesketch sketch using Lucene queries and return a list of event dictionaries.
 
         Events always contain the following fields:
         • datetime (useful for sorting)
@@ -197,7 +192,6 @@ async def search_timesketch_events_advanced(
     Args:
         sketch_id: The ID of the Timesketch sketch to search.
         query: The Lucene/OpenSearch query string to use for searching.
-        limit: Optional maximum number of events to return.
         sort: Sort order for datetime field, either "asc" or "desc". Default is "desc".
         starred: If True, only return starred events. If False, return all events.
 
@@ -213,7 +207,6 @@ async def search_timesketch_events_advanced(
         return _do_timesketch_search(
             sketch_id=sketch_id,
             query=query,
-            limit=limit,
             sort=sort,
             starred=starred,
         )
