@@ -95,9 +95,7 @@ async def count_distinct_field_values(
 
 
 @mcp.tool()
-async def discover_fields_for_datatype(
-    self, sketch_id: int, data_type: str
-) -> list[str]:
+async def discover_fields_for_datatype(sketch_id: int, data_type: str) -> list[str]:
     """Discover fields for a specific data type in a Timesketch sketch.
 
     Args:
@@ -114,18 +112,22 @@ async def discover_fields_for_datatype(
     fields = defaultdict(dict)
     sketch = get_timesketch_client().get_sketch(sketch_id)
     for event in events:
-        for key in event.keys():
-            if event["data_type"] in fields:
+        for field in event.keys():
+            if field in fields:
                 continue
 
-            values_for_field = _run_field_bucket_aggregation(sketch, key, limit=10)
+            values_for_field = _run_field_bucket_aggregation(sketch, field, limit=10)
             max_occurrences = max(
                 [value["count"] for value in values_for_field], default=0
             )
+
+            # If the max occurrences for this field is less than 10,
+            # it means it's probably unique.
             if max_occurrences < 10:
                 continue
 
-            fields[event["data_type"]][key] = values_for_field
+            examples = [value[data_type] for value in values_for_field]
+            fields[field] = examples
 
     return list(fields)
 
