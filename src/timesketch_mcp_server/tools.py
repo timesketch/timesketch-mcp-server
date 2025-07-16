@@ -281,8 +281,12 @@ def _do_timesketch_search(
 
     search_instance = search.Search(sketch=sketch)
     search_instance.query_string = query
+
     if limit:
         search_instance.max_entries = limit
+    else:
+        search_instance.expected_size = search_instance.expected_size + 1
+
     search_instance.return_fields = "*,_id"
     if sort == "desc":
         search_instance.order_descending()
