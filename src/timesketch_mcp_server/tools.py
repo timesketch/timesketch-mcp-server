@@ -59,7 +59,7 @@ def _run_field_bucket_aggregation(
 
 
 @mcp.tool()
-async def discover_data_types(sketch_id: int) -> list[dict[str, int]]:
+def discover_data_types(sketch_id: int) -> list[dict[str, int]]:
     """Discover data types in a Timesketch sketch.
 
     Args:
@@ -76,9 +76,7 @@ async def discover_data_types(sketch_id: int) -> list[dict[str, int]]:
 
 
 @mcp.tool()
-async def count_distinct_field_values(
-    sketch_id: int, field: str
-) -> list[dict[str, int]]:
+def count_distinct_field_values(sketch_id: int, field: str) -> list[dict[str, int]]:
     """Runs an aggregation to count distinct values for the specified field.
 
     Args:
@@ -95,7 +93,7 @@ async def count_distinct_field_values(
 
 
 @mcp.tool()
-async def discover_fields_for_datatype(sketch_id: int, data_type: str) -> list[str]:
+def discover_fields_for_datatype(sketch_id: int, data_type: str) -> list[str]:
     """Discover fields for a specific data type in a Timesketch sketch.
 
     Args:
@@ -133,7 +131,7 @@ async def discover_fields_for_datatype(sketch_id: int, data_type: str) -> list[s
 
 
 @mcp.tool()
-async def search_timesketch_events_substrings(
+def search_timesketch_events_substrings(
     sketch_id: int,
     substrings: list[str],
     regex: bool = False,
@@ -205,7 +203,7 @@ async def search_timesketch_events_substrings(
 
 
 @mcp.tool()
-async def search_timesketch_events_advanced(
+def search_timesketch_events_advanced(
     sketch_id: int,
     query: str,
     sort: str = "desc",
