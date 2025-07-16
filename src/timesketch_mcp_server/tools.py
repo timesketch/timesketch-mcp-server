@@ -118,10 +118,14 @@ async def discover_fields_for_datatype(
             if event["data_type"] in fields:
                 continue
 
-            breakpoint()
-            fields[event["data_type"]] = _run_field_bucket_aggregation(
-                sketch, key, limit=10
+            values_for_field = _run_field_bucket_aggregation(sketch, key, limit=10)
+            max_occurrences = max(
+                [value["count"] for value in values_for_field], default=0
             )
+            if max_occurrences < 10:
+                continue
+
+            fields[event["data_type"]][key] = values_for_field
 
     return list(fields)
 
