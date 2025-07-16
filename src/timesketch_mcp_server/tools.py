@@ -279,9 +279,7 @@ def _do_timesketch_search(
     search_instance.query_string = query
     if limit:
         search_instance.max_entries = limit
-    search_instance.return_fields = (
-        "_id, _index, datetime, message, data_type, tag, yara_match, sha256_hash"
-    )
+    search_instance.return_fields = "*,_id"
     if sort == "desc":
         search_instance.order_descending()
     else:
@@ -306,10 +304,6 @@ def _do_timesketch_search(
         result_df["sha256_hash"] = result_df["sha256_hash"].fillna("N/A")
         extra_cols.append("sha256_hash")
 
-    results_dict = (
-        result_df[["_id", "datetime", "data_type", "tag", "message"] + extra_cols]
-        .fillna("N/A")
-        .to_dict(orient="records")
-    )
+    results_dict = result_df.fillna("N/A").to_dict(orient="records")
 
     return results_dict
