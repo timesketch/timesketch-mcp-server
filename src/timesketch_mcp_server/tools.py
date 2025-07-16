@@ -285,7 +285,7 @@ def _do_timesketch_search(
     if limit:
         search_instance.max_entries = limit
     else:
-        search_instance.expected_size = search_instance.expected_size + 1
+        search_instance.max_entries = search_instance.expected_size + 1
 
     search_instance.return_fields = "*,_id"
     if sort == "desc":
