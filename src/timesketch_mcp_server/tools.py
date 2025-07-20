@@ -1,8 +1,9 @@
 from typing import Any, Optional
 
 from .utils import get_timesketch_client
-from timesketch_api_client import aggregation, search
+from timesketch_api_client import search
 from collections import defaultdict
+import pandas as pd
 
 from fastmcp import FastMCP
 
@@ -104,7 +105,7 @@ def discover_fields_for_datatype(sketch_id: int, data_type: str) -> list[str]:
         A list of field names that are present in the events of the specified data type.
     """
 
-    events = _do_timesketch_search(
+    events = do_timesketch_search(
         sketch_id=sketch_id, query=f'data_type:"{data_type}"', limit=1000, sort="desc"
     )
     fields = defaultdict(dict)
@@ -114,20 +115,19 @@ def discover_fields_for_datatype(sketch_id: int, data_type: str) -> list[str]:
             if field in fields:
                 continue
 
-            values_for_field = _run_field_bucket_aggregation(sketch, field, limit=10)
-            max_occurrences = max(
-                [value["count"] for value in values_for_field], default=0
-            )
+            top_values = _run_field_bucket_aggregation(sketch, field, limit=10)
+            max_occurrences = max([value["count"] for value in top_values], default=0)
 
             # If the max occurrences for this field is less than 10,
             # it means it's probably unique.
             if max_occurrences < 10:
+                fields[field] = None
                 continue
 
-            examples = [value[data_type] for value in values_for_field]
+            examples = [value[field] for value in top_values]
             fields[field] = examples
 
-    return list(fields)
+    return [field for field in fields.keys() if fields[field] is not None]
 
 
 @mcp.tool()
@@ -164,7 +164,7 @@ def search_timesketch_events_substrings(
         Each dictionary contains fields like datetime, data_type, tag, message,
         and optionally yara_match and sha256_hash if they are present in the results.
 
-        If the query errors, an error string is returned instead.
+        If the query errors, an error object is returned instead.
     """
 
     if not substrings:
@@ -192,14 +192,16 @@ def search_timesketch_events_substrings(
 
     query = boolean_operator.join(terms)
     try:
-        return _do_timesketch_search(
+        results_df = do_timesketch_search(
             sketch_id=sketch_id,
             query=query,
             sort=sort,
             starred=starred,
         )
+        results_df["datetime"] = results_df["datetime"].apply(lambda x: x.isoformat())
+        return results_df.to_dict(orient="records")
     except Exception as e:
-        return "Error: " + str(e)
+        return [{"result": f"Error: {str(e)}"}]
 
 
 @mcp.tool()
@@ -208,7 +210,7 @@ def search_timesketch_events_advanced(
     query: str,
     sort: str = "desc",
     starred: bool = False,
-) -> list[dict[str, Any]] | str:
+) -> list[dict[str, Any]]:
     """
     Search a Timesketch sketch using Lucene queries and return a list of event dictionaries.
 
@@ -240,28 +242,29 @@ def search_timesketch_events_advanced(
         Each dictionary contains fields like datetime, data_type, tag, message,
         and optionally yara_match and sha256_hash if they are present in the results.
 
-        If the query errors, an error string is returned instead.
+        If the query errors, an error object is returned instead.
     """
 
     try:
-        return _do_timesketch_search(
+        results_df = do_timesketch_search(
             sketch_id=sketch_id,
             query=query,
             sort=sort,
             starred=starred,
         )
+        return results_df.to_dict(orient="records")
     except Exception as e:
-        return "Error: " + str(e)
+        return [{"result": f"Error: {str(e)}"}]
 
 
-def _do_timesketch_search(
+def do_timesketch_search(
     sketch_id: int,
     query: str,
     limit: Optional[int] = None,
     sort: str = "desc",
     starred: bool = False,
-) -> list[dict[str, Any]]:
-    """Helper function to perform a search on a Timesketch sketch.
+) -> pd.DataFrame:
+    """Performs a search on a Timesketch sketch and returns a pandas DataFrame.
 
     Args:
         sketch_id: The ID of the Timesketch sketch to search.
@@ -270,6 +273,9 @@ def _do_timesketch_search(
         sort: Sort order for datetime field, either "asc" or "desc". Default is
             "desc".
         starred: If True, only return starred events. If False, return all events.
+
+    Returns:
+        A pandas DataFrame containing the search results.
 
     Raises:
         ValueError: If the sketch with the given ID does not exist.
@@ -312,6 +318,9 @@ def _do_timesketch_search(
         result_df["sha256_hash"] = result_df["sha256_hash"].fillna("N/A")
         extra_cols.append("sha256_hash")
 
-    results_dict = result_df.fillna("N/A").to_dict(orient="records")
+    # We convert the datetime column to ISO format so it shows up as a
+    # serializable string and not a datetime object.
+    result_df["datetime"] = result_df["datetime"].apply(lambda x: x.isoformat())
+    result_df = result_df.fillna("N/A")
 
-    return results_dict
+    return result_df
