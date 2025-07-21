@@ -198,7 +198,6 @@ def search_timesketch_events_substrings(
             sort=sort,
             starred=starred,
         )
-        results_df["datetime"] = results_df["datetime"].apply(lambda x: x.isoformat())
         return results_df.to_dict(orient="records")
     except Exception as e:
         return [{"result": f"Error: {str(e)}"}]
