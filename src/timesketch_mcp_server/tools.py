@@ -107,7 +107,7 @@ def discover_fields_for_datatype(sketch_id: int, data_type: str) -> list[str]:
 
     events = do_timesketch_search(
         sketch_id=sketch_id, query=f'data_type:"{data_type}"', limit=1000, sort="desc"
-    )
+    ).to_dict(orient="records")
     fields = defaultdict(dict)
     sketch = get_timesketch_client().get_sketch(sketch_id)
     for event in events:
