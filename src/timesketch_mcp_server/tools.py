@@ -100,7 +100,7 @@ def _run_field_bucket_aggregation(
 
 
 @mcp.tool()
-def discover_data_types(sketch_id: int) -> list[dict[str, int]]:
+def discover_data_types(sketch_id: int) -> list[dict[str, Any]]:
     """Discover data types in a Timesketch sketch.
 
     Args:
@@ -120,7 +120,7 @@ def discover_data_types(sketch_id: int) -> list[dict[str, int]]:
 
 
 @mcp.tool()
-def count_distinct_field_values(sketch_id: int, field: str) -> list[dict[str, int]]:
+def count_distinct_field_values(sketch_id: int, field: str) -> list[dict[str, Any]]:
     """Runs an aggregation to count distinct values for the specified field.
 
     Args:

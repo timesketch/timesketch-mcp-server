@@ -1,7 +1,7 @@
 import argparse
 import logging
 
-from fastmcp import FastMCP
+from fastmcp import FastMCP, settings
 
 from timesketch_mcp_server import tools
 
@@ -9,7 +9,7 @@ from timesketch_mcp_server import tools
 logger = logging.getLogger(__name__)
 
 
-mcp = FastMCP("timesketch-mcp", dependencies=["timesketch-api-client"])
+mcp = FastMCP("timesketch-mcp")
 
 
 mcp.mount(tools.mcp, prefix=None)
@@ -34,8 +34,8 @@ def main():
 
     logger.info(f"Running MCP server on {args.mcp_host}:{args.mcp_port}")
     try:
-        mcp.settings.port = args.mcp_port
-        mcp.settings.host = args.mcp_host
+        settings.port = args.mcp_port
+        settings.host = args.mcp_host
         mcp.run(transport="sse")
     except KeyboardInterrupt:
         logger.info("Server stopped by user")
