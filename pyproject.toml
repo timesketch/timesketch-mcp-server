@@ -3,7 +3,7 @@ name = "timesketch-mcp-server"
 version = "0.1.0"
 description = "MCP server for Timesketch"
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.12"
 dependencies = [
     "fastmcp>=2.9.0",
     "timesketch-api-client>=20250521",
