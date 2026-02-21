@@ -494,7 +494,7 @@ def add_event(
     message: str,
     date: str,
     timestamp_desc: str,
-    attributes: str = "",
+    attributes: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Add an event to the sketch.
 
@@ -503,7 +503,7 @@ def add_event(
         message: Message of the event.
         date: Date of the event (ISO 8601). Example: 2023-03-08T10:59:24+00:00
         timestamp_desc: Timestamp description of the event.
-        attributes: Attributes of the event. Example: key1=value1,key2=value2
+        attributes: Attributes of the event. Example: {'key1': 'value1', 'key2': 'value2'}
 
     Returns:
         A dictionary indicating the result of the operation.
@@ -512,21 +512,15 @@ def add_event(
     if not sketch:
         return {"status": "error", "error": f"Sketch with ID {sketch_id} not found."}
 
-    attributes_dict = {}
-    if attributes:
-        attributes_comma_split = attributes.split(",")
-
-        for attribute in attributes_comma_split:
-            if "=" in attribute:
-                key, value = attribute.split("=", 1)
-                attributes_dict[key.strip()] = value.strip()
+    if attributes is None:
+        attributes = {}
 
     try:
         return_value = sketch.add_event(
             message=message,
             date=date,
             timestamp_desc=timestamp_desc,
-            attributes=attributes_dict,
+            attributes=attributes,
         )
         return {"status": "success", "data": return_value}
     except Exception as e:

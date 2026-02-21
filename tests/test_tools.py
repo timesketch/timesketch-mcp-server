@@ -20,7 +20,7 @@ class TestAddEvent(unittest.TestCase):
         message = "Test Event"
         date = "2023-10-26T12:00:00+00:00"
         timestamp_desc = "Test Timestamp"
-        attributes = "key1=value1,key2=value2"
+        attributes = {"key1": "value1", "key2": "value2"}
 
         # Call the function
         result = add_event(sketch_id, message, date, timestamp_desc, attributes)
@@ -30,12 +30,11 @@ class TestAddEvent(unittest.TestCase):
         self.assertEqual(result["data"], "Event added")
 
         # Verify add_event was called with correct arguments
-        expected_attributes = {"key1": "value1", "key2": "value2"}
         mock_sketch.add_event.assert_called_with(
             message=message,
             date=date,
             timestamp_desc=timestamp_desc,
-            attributes=expected_attributes
+            attributes=attributes
         )
 
     @patch('src.timesketch_mcp_server.tools.get_timesketch_client')
@@ -52,7 +51,7 @@ class TestAddEvent(unittest.TestCase):
         date = "2023-10-26T12:00:00+00:00"
         timestamp_desc = "Test Timestamp"
 
-        # Call the function with empty attributes
+        # Call the function with default attributes (None)
         result = add_event(sketch_id, message, date, timestamp_desc)
 
         # Verify add_event was called with empty attributes dict
