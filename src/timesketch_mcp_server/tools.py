@@ -486,3 +486,48 @@ def do_timesketch_search(
     result_df = result_df.fillna("N/A")
 
     return result_df
+
+
+@mcp.tool()
+def add_event(
+    sketch_id: int,
+    message: str,
+    date: str,
+    timestamp_desc: str,
+    attributes: str = "",
+) -> str:
+    """Add an event to the sketch.
+
+    Args:
+        sketch_id: The ID of the Timesketch sketch to add the event to.
+        message: Message of the event.
+        date: Date of the event (ISO 8601). Example: 2023-03-08T10:59:24+00:00
+        timestamp_desc: Timestamp description of the event.
+        attributes: Attributes of the event. Example: key1=value1,key2=value2
+
+    Returns:
+        A string indicating the result of the operation.
+    """
+    sketch = get_timesketch_client().get_sketch(sketch_id)
+    if not sketch:
+        return f"Error: Sketch with ID {sketch_id} not found."
+
+    attributes_dict = {}
+    if attributes:
+        attributes_comma_split = attributes.split(",")
+
+        for attribute in attributes_comma_split:
+            if "=" in attribute:
+                key, value = attribute.split("=", 1)
+                attributes_dict[key.strip()] = value.strip()
+
+    try:
+        sketch.add_event(
+            message=message,
+            date=date,
+            timestamp_desc=timestamp_desc,
+            attributes=attributes_dict,
+        )
+        return f"Event added to sketch: {sketch.name}"
+    except Exception as e:
+        return f"Error: {str(e)}"
