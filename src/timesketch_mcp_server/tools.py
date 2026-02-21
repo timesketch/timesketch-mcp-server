@@ -495,7 +495,7 @@ def add_event(
     date: str,
     timestamp_desc: str,
     attributes: str = "",
-) -> str:
+) -> dict[str, Any]:
     """Add an event to the sketch.
 
     Args:
@@ -506,11 +506,11 @@ def add_event(
         attributes: Attributes of the event. Example: key1=value1,key2=value2
 
     Returns:
-        A string indicating the result of the operation.
+        A dictionary indicating the result of the operation.
     """
     sketch = get_timesketch_client().get_sketch(sketch_id)
     if not sketch:
-        return f"Error: Sketch with ID {sketch_id} not found."
+        return {"status": "error", "error": f"Sketch with ID {sketch_id} not found."}
 
     attributes_dict = {}
     if attributes:
@@ -522,12 +522,12 @@ def add_event(
                 attributes_dict[key.strip()] = value.strip()
 
     try:
-        sketch.add_event(
+        return_value = sketch.add_event(
             message=message,
             date=date,
             timestamp_desc=timestamp_desc,
             attributes=attributes_dict,
         )
-        return f"Event added to sketch: {sketch.name}"
+        return {"status": "success", "data": return_value}
     except Exception as e:
-        return f"Error: {str(e)}"
+        return {"status": "error", "error": str(e)}
