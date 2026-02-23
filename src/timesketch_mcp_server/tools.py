@@ -12,6 +12,8 @@ from .utils import get_timesketch_client
 logger = logging.getLogger(__name__)
 mcp = FastMCP(name="timesketch-tools")
 
+DEFAULT_SOURCE_SHORT = "TimesketchMCP"
+
 RESERVED_CHARS = [
     "+",
     "-",
@@ -514,6 +516,9 @@ def add_event(
 
     if attributes is None:
         attributes = {}
+
+    if "source_short" not in attributes:
+        attributes["source_short"] = DEFAULT_SOURCE_SHORT
 
     try:
         return_value = sketch.add_event(

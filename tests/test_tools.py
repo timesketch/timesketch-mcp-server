@@ -2,7 +2,7 @@ import unittest
 from unittest.mock import MagicMock, patch
 
 # This import should fail if add_event is not implemented
-from src.timesketch_mcp_server.tools import add_event
+from src.timesketch_mcp_server.tools import add_event, DEFAULT_SOURCE_SHORT
 
 class TestAddEvent(unittest.TestCase):
 
@@ -30,11 +30,13 @@ class TestAddEvent(unittest.TestCase):
         self.assertEqual(result["data"], "Event added")
 
         # Verify add_event was called with correct arguments
+        # Check that source_short is added
+        expected_attributes = {"key1": "value1", "key2": "value2", "source_short": DEFAULT_SOURCE_SHORT}
         mock_sketch.add_event.assert_called_with(
             message=message,
             date=date,
             timestamp_desc=timestamp_desc,
-            attributes=attributes
+            attributes=expected_attributes
         )
 
     @patch('src.timesketch_mcp_server.tools.get_timesketch_client')
@@ -54,12 +56,39 @@ class TestAddEvent(unittest.TestCase):
         # Call the function with default attributes (None)
         result = add_event(sketch_id, message, date, timestamp_desc)
 
-        # Verify add_event was called with empty attributes dict
+        # Verify add_event was called with attributes containing source_short
         mock_sketch.add_event.assert_called_with(
             message=message,
             date=date,
             timestamp_desc=timestamp_desc,
-            attributes={}
+            attributes={"source_short": DEFAULT_SOURCE_SHORT}
+        )
+        self.assertEqual(result["status"], "success")
+
+    @patch('src.timesketch_mcp_server.tools.get_timesketch_client')
+    def test_add_event_with_source_short(self, mock_get_client):
+        # Setup mocks
+        mock_sketch = MagicMock()
+        mock_sketch.add_event.return_value = "Event added"
+        mock_client = MagicMock()
+        mock_client.get_sketch.return_value = mock_sketch
+        mock_get_client.return_value = mock_client
+
+        sketch_id = 1
+        message = "Test Event Custom Source"
+        date = "2023-10-26T12:00:00+00:00"
+        timestamp_desc = "Test Timestamp"
+        attributes = {"source_short": "CustomSource"}
+
+        # Call the function
+        result = add_event(sketch_id, message, date, timestamp_desc, attributes)
+
+        # Verify source_short is NOT overwritten
+        mock_sketch.add_event.assert_called_with(
+            message=message,
+            date=date,
+            timestamp_desc=timestamp_desc,
+            attributes={"source_short": "CustomSource"}
         )
         self.assertEqual(result["status"], "success")
 
