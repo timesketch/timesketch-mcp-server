@@ -43,6 +43,9 @@ def tag_events(
     sketch_id: int, event_ids: list[str], tag_name: str
 ) -> list[dict[str, str | int]]:
     """Tags events in a list of dictionaries with a given tag."""
+    if not event_ids:
+        return [{"result": "No event IDs provided."}]
+
     sketch = get_timesketch_client().get_sketch(sketch_id)
     events = do_timesketch_search(
         sketch_id=sketch_id,
@@ -51,11 +54,13 @@ def tag_events(
     ).to_dict(orient="records")
     result = sketch.tag_events(events, [tag_name])
     tagged = result.get("number_of_events_with_added_tags", 0)
-    return {
-        "result": f"Tagged {tagged} events.",
-        "tagged_events": tagged,
-        "failed_events": len(events) - tagged,
-    }
+    return [
+        {
+            "result": f"Tagged {tagged} events.",
+            "tagged_events": tagged,
+            "failed_events": len(events) - tagged,
+        }
+    ]
 
 
 @mcp.tool()
@@ -63,6 +68,9 @@ def comment_events(
     sketch_id: int, event_ids: list[str], annotation: str
 ) -> list[dict[str, str | int]]:
     """Adds a comment to Timesketch events."""
+    if not event_ids:
+        return [{"result": "No event IDs provided."}]
+
     sketch = get_timesketch_client().get_sketch(sketch_id)
     events = do_timesketch_search(
         sketch_id=sketch_id,
@@ -72,7 +80,7 @@ def comment_events(
     for event in events:
         sketch.comment_event(event["_id"], event["_index"], annotation)
 
-    return {"result": "Success"}
+    return [{"result": "Success"}]
 
 
 def _run_field_bucket_aggregation(
@@ -262,6 +270,9 @@ def get_events_by_id(
         and optionally yara_match and sha256_hash if they are present in the
         results.
     """
+
+    if not event_ids:
+        return []
 
     try:
         results_df = do_timesketch_search(
@@ -486,3 +497,47 @@ def do_timesketch_search(
     result_df = result_df.fillna("N/A")
 
     return result_df
+
+
+@mcp.tool()
+def star_events(
+    sketch_id: int, event_ids: list[str], comment: str = ""
+) -> dict[str, Any]:
+    """Star events in a Timesketch sketch."""
+    if not event_ids:
+        return {"result": "No event IDs provided."}
+
+    sketch = get_timesketch_client().get_sketch(sketch_id)
+    events = do_timesketch_search(
+        sketch_id=sketch_id,
+        query=f"_id:({' OR '.join([f'"{eid}"' for eid in event_ids])})",
+        return_fields="_id,_index",
+    ).to_dict(orient="records")
+
+    if not events:
+        return {"result": "No events found to star."}
+
+    if comment:
+        for event in events:
+            sketch.comment_event(event["_id"], event["_index"], comment)
+
+    return sketch.label_events(events, "__ts_star")
+
+
+@mcp.tool()
+def unstar_events(sketch_id: int, event_ids: list[str]) -> dict[str, Any]:
+    """Unstar events in a Timesketch sketch."""
+    if not event_ids:
+        return {"result": "No event IDs provided."}
+
+    sketch = get_timesketch_client().get_sketch(sketch_id)
+    events = do_timesketch_search(
+        sketch_id=sketch_id,
+        query=f"_id:({' OR '.join([f'"{eid}"' for eid in event_ids])})",
+        return_fields="_id,_index",
+    ).to_dict(orient="records")
+
+    if not events:
+        return {"result": "No events found to unstar."}
+
+    return sketch.label_events(events, "__ts_star", remove=True)
