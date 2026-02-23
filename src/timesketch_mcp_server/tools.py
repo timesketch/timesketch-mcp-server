@@ -44,7 +44,7 @@ def tag_events(
 ) -> list[dict[str, str | int]]:
     """Tags events in a list of dictionaries with a given tag."""
     if not event_ids:
-        return {"result": "No event IDs provided."}
+        return [{"result": "No event IDs provided."}]
 
     sketch = get_timesketch_client().get_sketch(sketch_id)
     events = do_timesketch_search(
@@ -54,11 +54,13 @@ def tag_events(
     ).to_dict(orient="records")
     result = sketch.tag_events(events, [tag_name])
     tagged = result.get("number_of_events_with_added_tags", 0)
-    return {
-        "result": f"Tagged {tagged} events.",
-        "tagged_events": tagged,
-        "failed_events": len(events) - tagged,
-    }
+    return [
+        {
+            "result": f"Tagged {tagged} events.",
+            "tagged_events": tagged,
+            "failed_events": len(events) - tagged,
+        }
+    ]
 
 
 @mcp.tool()
@@ -67,7 +69,7 @@ def comment_events(
 ) -> list[dict[str, str | int]]:
     """Adds a comment to Timesketch events."""
     if not event_ids:
-        return {"result": "No event IDs provided."}
+        return [{"result": "No event IDs provided."}]
 
     sketch = get_timesketch_client().get_sketch(sketch_id)
     events = do_timesketch_search(
@@ -78,7 +80,7 @@ def comment_events(
     for event in events:
         sketch.comment_event(event["_id"], event["_index"], annotation)
 
-    return {"result": "Success"}
+    return [{"result": "Success"}]
 
 
 def _run_field_bucket_aggregation(

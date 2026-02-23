@@ -105,11 +105,11 @@ class TestStarEvents(unittest.TestCase):
 
     def test_tag_events_empty(self):
         result = tools.tag_events.fn(sketch_id=1, event_ids=[], tag_name="tag")
-        self.assertEqual(result, {"result": "No event IDs provided."})
+        self.assertEqual(result, [{"result": "No event IDs provided."}])
 
     def test_comment_events_empty(self):
         result = tools.comment_events.fn(sketch_id=1, event_ids=[], annotation="comment")
-        self.assertEqual(result, {"result": "No event IDs provided."})
+        self.assertEqual(result, [{"result": "No event IDs provided."}])
 
     def test_get_events_by_id_empty(self):
         result = tools.get_events_by_id.fn(sketch_id=1, event_ids=[])
