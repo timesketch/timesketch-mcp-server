@@ -525,9 +525,7 @@ def star_events(
 
 
 @mcp.tool()
-def unstar_events(
-    sketch_id: int, event_ids: list[str]
-) -> dict[str, Any]:
+def unstar_events(sketch_id: int, event_ids: list[str]) -> dict[str, Any]:
     """Unstar events in a Timesketch sketch."""
     if not event_ids:
         return {"result": "No event IDs provided."}
