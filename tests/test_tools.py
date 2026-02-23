@@ -44,6 +44,35 @@ class TestStarEvents(unittest.TestCase):
 
     @patch('timesketch_mcp_server.tools.get_timesketch_client')
     @patch('timesketch_mcp_server.tools.do_timesketch_search')
+    def test_star_events_with_comment(self, mock_search, mock_get_client):
+        # Mock setup
+        mock_sketch = MagicMock()
+        mock_get_client.return_value.get_sketch.return_value = mock_sketch
+
+        # Mock search results
+        mock_events_df = MagicMock()
+        mock_events = [{"_id": "event1", "_index": "index1"}]
+        mock_events_df.to_dict.return_value = mock_events
+        mock_search.return_value = mock_events_df
+
+        # Mock label_events return value
+        mock_sketch.label_events.return_value = {"result": "success"}
+
+        # Call the tool function with comment
+        result = tools.star_events.fn(sketch_id=1, event_ids=["event1"], comment="important")
+
+        # Verify
+        mock_search.assert_called_with(
+            sketch_id=1,
+            query='_id:("event1")',
+            return_fields="_id,_index"
+        )
+        mock_sketch.comment_event.assert_called_with("event1", "index1", "important")
+        mock_sketch.label_events.assert_called_with(mock_events, "__ts_star")
+        self.assertEqual(result, {"result": "success"})
+
+    @patch('timesketch_mcp_server.tools.get_timesketch_client')
+    @patch('timesketch_mcp_server.tools.do_timesketch_search')
     def test_unstar_events(self, mock_search, mock_get_client):
         # Mock setup
         mock_sketch = MagicMock()

@@ -499,7 +499,7 @@ def do_timesketch_search(
 
 @mcp.tool()
 def star_events(
-    sketch_id: int, event_ids: list[str]
+    sketch_id: int, event_ids: list[str], comment: str = ""
 ) -> dict[str, Any]:
     """Star events in a Timesketch sketch."""
     if not event_ids:
@@ -514,6 +514,10 @@ def star_events(
 
     if not events:
         return {"result": "No events found to star."}
+
+    if comment:
+        for event in events:
+            sketch.comment_event(event["_id"], event["_index"], comment)
 
     return sketch.label_events(events, "__ts_star")
 
