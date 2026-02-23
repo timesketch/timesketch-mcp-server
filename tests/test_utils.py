@@ -2,17 +2,21 @@ import unittest
 from unittest.mock import patch
 from timesketch_mcp_server.utils import get_timesketch_client
 
+
 class TestUtils(unittest.TestCase):
     def setUp(self):
         # Clear the cache before each test to ensure isolation
         get_timesketch_client.cache_clear()
 
-    @patch.dict("os.environ", {
-        "TIMESKETCH_HOST": "test-host",
-        "TIMESKETCH_PORT": "8080",
-        "TIMESKETCH_USER": "test-user",
-        "TIMESKETCH_PASSWORD": "test-password"
-    })
+    @patch.dict(
+        "os.environ",
+        {
+            "TIMESKETCH_HOST": "test-host",
+            "TIMESKETCH_PORT": "8080",
+            "TIMESKETCH_USER": "test-user",
+            "TIMESKETCH_PASSWORD": "test-password",
+        },
+    )
     @patch("timesketch_mcp_server.utils.TimesketchApi")
     def test_get_timesketch_client_initialization(self, mock_api):
         """Test that the client is initialized with environment variables."""
@@ -21,15 +25,18 @@ class TestUtils(unittest.TestCase):
         mock_api.assert_called_once_with(
             host_uri="http://test-host:8080/",
             username="test-user",
-            password="test-password"
+            password="test-password",
         )
 
-    @patch.dict("os.environ", {
-        "TIMESKETCH_HOST": "test-host",
-        "TIMESKETCH_PORT": "8080",
-        "TIMESKETCH_USER": "test-user",
-        "TIMESKETCH_PASSWORD": "test-password"
-    })
+    @patch.dict(
+        "os.environ",
+        {
+            "TIMESKETCH_HOST": "test-host",
+            "TIMESKETCH_PORT": "8080",
+            "TIMESKETCH_USER": "test-user",
+            "TIMESKETCH_PASSWORD": "test-password",
+        },
+    )
     @patch("timesketch_mcp_server.utils.TimesketchApi")
     def test_get_timesketch_client_caching(self, mock_api):
         """Test that the client instance is cached."""
