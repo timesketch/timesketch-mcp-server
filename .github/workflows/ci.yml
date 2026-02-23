@@ -47,10 +47,10 @@ jobs:
           uv venv
           uv pip install -e '.[dev]'
 
-      - name: Run ruff on changed files
+      - name: Run ruff on changed python files
         run: |
           git fetch origin ${{ github.base_ref }}
-          git --no-pager diff origin/${{ github.base_ref }} --name-only --diff-filter=ACMR -z | xargs -0 -r uv run ruff check
+          git --no-pager diff origin/${{ github.base_ref }} --name-only --diff-filter=ACMR -z -- '*.py' | xargs -0 -r uv run ruff check
 
   ruff-format:
     runs-on: ubuntu-latest
@@ -76,4 +76,4 @@ jobs:
       - name: Run ruff on changed files
         run: |
           git fetch origin ${{ github.base_ref }}
-          git --no-pager diff origin/${{ github.base_ref }} --name-only --diff-filter=ACMR -z | xargs -0 -r uv run ruff format --diff
+          git --no-pager diff origin/${{ github.base_ref }} --name-only --diff-filter=ACMR -z -- '*.py' | xargs -0 -r uv run ruff format --diff
