@@ -27,7 +27,7 @@ class TestStarEvents(unittest.TestCase):
         mock_sketch.label_events.return_value = {"result": "success"}
 
         # Call the tool function
-        result = tools.star_events.fn(sketch_id=1, event_ids=["event1"])
+        result = tools.star_events(sketch_id=1, event_ids=["event1"])
 
         # Verify
         mock_search.assert_called_with(
@@ -39,7 +39,7 @@ class TestStarEvents(unittest.TestCase):
         self.assertEqual(result, {"result": "success"})
 
     def test_star_events_empty(self):
-        result = tools.star_events.fn(sketch_id=1, event_ids=[])
+        result = tools.star_events(sketch_id=1, event_ids=[])
         self.assertEqual(result, {"result": "No event IDs provided."})
 
     @patch('timesketch_mcp_server.tools.get_timesketch_client')
@@ -59,7 +59,7 @@ class TestStarEvents(unittest.TestCase):
         mock_sketch.label_events.return_value = {"result": "success"}
 
         # Call the tool function with comment
-        result = tools.star_events.fn(sketch_id=1, event_ids=["event1"], comment="important")
+        result = tools.star_events(sketch_id=1, event_ids=["event1"], comment="important")
 
         # Verify
         mock_search.assert_called_with(
@@ -88,7 +88,7 @@ class TestStarEvents(unittest.TestCase):
         mock_sketch.label_events.return_value = {"result": "success"}
 
         # Call the tool function
-        result = tools.unstar_events.fn(sketch_id=1, event_ids=["event1"])
+        result = tools.unstar_events(sketch_id=1, event_ids=["event1"])
 
         # Verify
         mock_search.assert_called_with(
@@ -100,17 +100,17 @@ class TestStarEvents(unittest.TestCase):
         self.assertEqual(result, {"result": "success"})
 
     def test_unstar_events_empty(self):
-        result = tools.unstar_events.fn(sketch_id=1, event_ids=[])
+        result = tools.unstar_events(sketch_id=1, event_ids=[])
         self.assertEqual(result, {"result": "No event IDs provided."})
 
     def test_tag_events_empty(self):
-        result = tools.tag_events.fn(sketch_id=1, event_ids=[], tag_name="tag")
+        result = tools.tag_events(sketch_id=1, event_ids=[], tag_name="tag")
         self.assertEqual(result, [{"result": "No event IDs provided."}])
 
     def test_comment_events_empty(self):
-        result = tools.comment_events.fn(sketch_id=1, event_ids=[], annotation="comment")
+        result = tools.comment_events(sketch_id=1, event_ids=[], annotation="comment")
         self.assertEqual(result, [{"result": "No event IDs provided."}])
 
     def test_get_events_by_id_empty(self):
-        result = tools.get_events_by_id.fn(sketch_id=1, event_ids=[])
+        result = tools.get_events_by_id(sketch_id=1, event_ids=[])
         self.assertEqual(result, [])
