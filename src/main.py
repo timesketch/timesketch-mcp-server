@@ -30,8 +30,8 @@ mcp.mount(tools.mcp, prefix=None)
 
 def main():
     """Entry point for the Timesketch MCP server.
-    
-    Parses command-line arguments and starts the FastMCP server using 
+
+    Parses command-line arguments and starts the FastMCP server using
     the Server-Sent Events (SSE) transport.
     """
     parser = argparse.ArgumentParser(description="MCP server for Timesketch")
