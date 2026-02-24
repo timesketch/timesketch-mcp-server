@@ -1,3 +1,16 @@
+# Copyright 2026 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 from collections import defaultdict
 import logging
 import time
@@ -41,8 +54,17 @@ RESERVED_CHARS = [
 @mcp.tool()
 def tag_events(
     sketch_id: int, event_ids: list[str], tag_name: str
-) -> list[dict[str, str | int]]:
-    """Tags events in a list of dictionaries with a given tag."""
+) -> dict[str, str | int]:
+    """Tags events in a Timesketch sketch.
+
+    Args:
+        sketch_id: The ID of the Timesketch sketch.
+        event_ids: A list of event IDs to tag.
+        tag_name: The name of the tag to add.
+
+    Returns:
+        A dictionary containing the result message and counts of tagged/failed events.
+    """
     sketch = get_timesketch_client().get_sketch(sketch_id)
     events = do_timesketch_search(
         sketch_id=sketch_id,
@@ -61,8 +83,17 @@ def tag_events(
 @mcp.tool()
 def comment_events(
     sketch_id: int, event_ids: list[str], annotation: str
-) -> list[dict[str, str | int]]:
-    """Adds a comment to Timesketch events."""
+) -> dict[str, str]:
+    """Adds a comment/annotation to multiple events in a Timesketch sketch.
+
+    Args:
+        sketch_id: The ID of the Timesketch sketch.
+        event_ids: A list of event IDs to annotate.
+        annotation: The text of the comment to add.
+
+    Returns:
+        A dictionary indicating the result of the operation.
+    """
     sketch = get_timesketch_client().get_sketch(sketch_id)
     events = do_timesketch_search(
         sketch_id=sketch_id,
