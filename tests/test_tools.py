@@ -83,8 +83,6 @@ class TestTools(unittest.TestCase):
 
         # Verify query construction: '+' should be escaped as '\+'
         # The expected query for a substring search is *test\+query*
-        mock_search_instance.query_string = r"*test\+query*"
-
         # Check that the search was called with the escaped query
         self.assertEqual(mock_search_instance.query_string, r"*test\+query*")
 
