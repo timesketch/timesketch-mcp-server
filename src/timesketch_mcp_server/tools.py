@@ -516,6 +516,8 @@ def add_event(
 
     if attributes is None:
         attributes = {}
+    else:
+        attributes = attributes.copy()
 
     if "source_short" not in attributes:
         attributes["source_short"] = DEFAULT_SOURCE_SHORT
