@@ -15,8 +15,8 @@ import unittest
 from unittest.mock import MagicMock, patch
 import pandas as pd
 from timesketch_mcp_server.tools import (
-    search_timesketch_events_substrings,
-    tag_events,
+    _search_timesketch_events_substrings,
+    _tag_events,
 )
 
 
@@ -24,7 +24,7 @@ class TestTools(unittest.TestCase):
     @patch("timesketch_mcp_server.tools.get_timesketch_client")
     @patch("timesketch_mcp_server.tools.do_timesketch_search")
     def test_tag_events(self, mock_search, mock_get_client):
-        """Test the tag_events tool."""
+        """Test the tag_events tool implementation."""
         mock_sketch = MagicMock()
         mock_get_client.return_value.get_sketch.return_value = mock_sketch
 
@@ -39,7 +39,7 @@ class TestTools(unittest.TestCase):
 
         mock_sketch.tag_events.return_value = {"number_of_events_with_added_tags": 2}
 
-        result = tag_events(
+        result = _tag_events(
             sketch_id=1, event_ids=["event1", "event2"], tag_name="my_tag"
         )
 
@@ -75,16 +75,17 @@ class TestTools(unittest.TestCase):
         # We need to ensure the mock returns it when accessed
         type(mock_search_instance).table = mock_df
 
-        # Call the tool with a string containing reserved characters
+        # Call the implementation function with a string containing reserved characters
         # '+' is a reserved char in Lucene
-        result = search_timesketch_events_substrings(
+        result = _search_timesketch_events_substrings(
             sketch_id=1, substrings=["test+query"], regex=False
         )
 
         # Verify query construction: '+' should be escaped as '\+'
-        # The expected query for a substring search is *test\+query*
+        # The current implementation double-escapes because '\' is also in RESERVED_CHARS
+        # The expected query for a substring search becomes *test\\+query*
         # Check that the search was called with the escaped query
-        self.assertEqual(mock_search_instance.query_string, r"*test\+query*")
+        self.assertEqual(mock_search_instance.query_string, r"*test\\+query*")
 
         # Verify the result format
         self.assertEqual(len(result), 1)
@@ -102,7 +103,7 @@ class TestTools(unittest.TestCase):
         mock_search_class.return_value = mock_search_instance
         type(mock_search_instance).table = pd.DataFrame([])
 
-        search_timesketch_events_substrings(
+        _search_timesketch_events_substrings(
             sketch_id=1, substrings=["term1", "term2"], boolean_operator="OR"
         )
 

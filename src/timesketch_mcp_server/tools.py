@@ -65,6 +65,13 @@ def tag_events(
     Returns:
         A dictionary containing the result message and counts of tagged/failed events.
     """
+    return _tag_events(sketch_id, event_ids, tag_name)
+
+
+def _tag_events(
+    sketch_id: int, event_ids: list[str], tag_name: str
+) -> dict[str, str | int]:
+    """The actual implementation logic for tagging events."""
     sketch = get_timesketch_client().get_sketch(sketch_id)
     events = do_timesketch_search(
         sketch_id=sketch_id,
@@ -94,6 +101,13 @@ def comment_events(
     Returns:
         A dictionary indicating the result of the operation.
     """
+    return _comment_events(sketch_id, event_ids, annotation)
+
+
+def _comment_events(
+    sketch_id: int, event_ids: list[str], annotation: str
+) -> dict[str, str]:
+    """The actual implementation logic for commenting on events."""
     sketch = get_timesketch_client().get_sketch(sketch_id)
     events = do_timesketch_search(
         sketch_id=sketch_id,
@@ -142,7 +156,11 @@ def discover_data_types(sketch_id: int) -> list[dict[str, Any]]:
         - data_type: The name of the data type.
         - count: The number of events for that data type.
     """
+    return _discover_data_types(sketch_id)
 
+
+def _discover_data_types(sketch_id: int) -> list[dict[str, Any]]:
+    """The actual implementation logic for discovering data types."""
     sketch = get_timesketch_client().get_sketch(sketch_id)
     try:
         return _run_field_bucket_aggregation(sketch, "data_type")
@@ -162,7 +180,11 @@ def count_distinct_field_values(sketch_id: int, field: str) -> list[dict[str, An
     Returns:
         A list of dictionaries containing the aggregation results.
     """
+    return _count_distinct_field_values(sketch_id, field)
 
+
+def _count_distinct_field_values(sketch_id: int, field: str) -> list[dict[str, Any]]:
+    """The actual implementation logic for counting distinct field values."""
     sketch = get_timesketch_client().get_sketch(sketch_id)
     try:
         return _run_field_bucket_aggregation(sketch, field)
@@ -182,7 +204,11 @@ def discover_fields_for_datatype(sketch_id: int, data_type: str) -> dict[str, An
         A list of field names that are present in the events of the specified data
         type.
     """
+    return _discover_fields_for_datatype(sketch_id, data_type)
 
+
+def _discover_fields_for_datatype(sketch_id: int, data_type: str) -> dict[str, Any]:
+    """The actual implementation logic for discovering fields for a data type."""
     events = do_timesketch_search(
         sketch_id=sketch_id,
         query=f'data_type:"{data_type}"',
@@ -239,7 +265,20 @@ def search_timesketch_events_substrings(
 
         If the query errors, an error object is returned instead.
     """
+    return _search_timesketch_events_substrings(
+        sketch_id, substrings, regex, boolean_operator, sort, starred
+    )
 
+
+def _search_timesketch_events_substrings(
+    sketch_id: int,
+    substrings: list[str],
+    regex: bool = False,
+    boolean_operator: str = "AND",
+    sort: str = "desc",
+    starred: bool = False,
+) -> list[dict[str, Any]]:
+    """The actual implementation logic for searching substrings."""
     if not substrings:
         raise ValueError("Substrings list cannot be empty.")
 
@@ -293,7 +332,14 @@ def get_events_by_id(
         and optionally yara_match and sha256_hash if they are present in the
         results.
     """
+    return _get_events_by_id(sketch_id, event_ids)
 
+
+def _get_events_by_id(
+    sketch_id: int,
+    event_ids: list[str],
+) -> list[dict[str, Any]]:
+    """The actual implementation logic for getting events by ID."""
     try:
         results_df = do_timesketch_search(
             sketch_id=sketch_id,
@@ -357,7 +403,16 @@ def search_timesketch_events_advanced(
 
         If the query errors, an error object is returned instead.
     """
+    return _search_timesketch_events_advanced(sketch_id, query, sort, starred)
 
+
+def _search_timesketch_events_advanced(
+    sketch_id: int,
+    query: str,
+    sort: str = "desc",
+    starred: bool = False,
+) -> list[dict[str, Any]]:
+    """The actual implementation logic for advanced search."""
     try:
         results_df = do_timesketch_search(
             sketch_id=sketch_id,
