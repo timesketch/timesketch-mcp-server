@@ -23,7 +23,7 @@ class TestAddEvent(unittest.TestCase):
         attributes = {"key1": "value1", "key2": "value2"}
 
         # Call the function
-        result = add_event(sketch_id, message, date, timestamp_desc, attributes)
+        result = add_event.fn(sketch_id, message, date, timestamp_desc, attributes)
 
         # Verify result structure
         self.assertEqual(result["status"], "success")
@@ -58,7 +58,7 @@ class TestAddEvent(unittest.TestCase):
         timestamp_desc = "Test Timestamp"
 
         # Call the function with default attributes (None)
-        result = add_event(sketch_id, message, date, timestamp_desc)
+        result = add_event.fn(sketch_id, message, date, timestamp_desc)
 
         # Verify add_event was called with attributes containing source_short
         mock_sketch.add_event.assert_called_with(
@@ -85,7 +85,7 @@ class TestAddEvent(unittest.TestCase):
         attributes = {"source_short": "CustomSource"}
 
         # Call the function
-        result = add_event(sketch_id, message, date, timestamp_desc, attributes)
+        result = add_event.fn(sketch_id, message, date, timestamp_desc, attributes)
 
         # Verify source_short is NOT overwritten
         mock_sketch.add_event.assert_called_with(
@@ -116,7 +116,7 @@ class TestAddEvent(unittest.TestCase):
         timestamp_desc = "Test Timestamp"
 
         # Call the function
-        result = add_event(sketch_id, message, date, timestamp_desc)
+        result = add_event.fn(sketch_id, message, date, timestamp_desc)
 
         # Verify error message is returned
         self.assertEqual(result["status"], "error")
@@ -135,7 +135,7 @@ class TestAddEvent(unittest.TestCase):
         timestamp_desc = "Test Timestamp"
 
         # Call the function
-        result = add_event(sketch_id, message, date, timestamp_desc)
+        result = add_event.fn(sketch_id, message, date, timestamp_desc)
 
         # Verify error message is returned
         self.assertEqual(result["status"], "error")
