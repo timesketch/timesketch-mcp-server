@@ -6,24 +6,30 @@ from timesketch_mcp_server.tools import add_event, DEFAULT_SOURCE_SHORT
 
 
 class TestAddEvent(unittest.TestCase):
-    @patch("timesketch_mcp_server.tools.get_timesketch_client")
-    def test_add_event_success(self, mock_get_client):
-        # Setup mocks
-        mock_sketch = MagicMock()
-        # Mock add_event return value
-        mock_sketch.add_event.return_value = "Event added"
-        mock_client = MagicMock()
-        mock_client.get_sketch.return_value = mock_sketch
-        mock_get_client.return_value = mock_client
+    def setUp(self):
+        self.patcher = patch("timesketch_mcp_server.tools.get_timesketch_client")
+        self.mock_get_client = self.patcher.start()
 
-        sketch_id = 1
-        message = "Test Event"
-        date = "2023-10-26T12:00:00+00:00"
-        timestamp_desc = "Test Timestamp"
-        attributes = {"key1": "value1", "key2": "value2"}
+        self.mock_sketch = MagicMock()
+        self.mock_sketch.add_event.return_value = "Event added"
 
+        self.mock_client = MagicMock()
+        self.mock_client.get_sketch.return_value = self.mock_sketch
+
+        self.mock_get_client.return_value = self.mock_client
+
+    def tearDown(self):
+        self.patcher.stop()
+
+    def test_add_event_success(self):
         # Call the function
-        result = add_event.fn(sketch_id, message, date, timestamp_desc, attributes)
+        result = add_event.fn(
+            1,
+            "Test Event",
+            "2023-10-26T12:00:00+00:00",
+            "Test Timestamp",
+            {"key1": "value1", "key2": "value2"},
+        )
 
         # Verify result structure
         self.assertEqual(result["status"], "success")
@@ -36,106 +42,69 @@ class TestAddEvent(unittest.TestCase):
             "key2": "value2",
             "source_short": DEFAULT_SOURCE_SHORT,
         }
-        mock_sketch.add_event.assert_called_with(
-            message=message,
-            date=date,
-            timestamp_desc=timestamp_desc,
+        self.mock_sketch.add_event.assert_called_with(
+            message="Test Event",
+            date="2023-10-26T12:00:00+00:00",
+            timestamp_desc="Test Timestamp",
             attributes=expected_attributes,
         )
 
-    @patch("timesketch_mcp_server.tools.get_timesketch_client")
-    def test_add_event_no_attributes(self, mock_get_client):
-        # Setup mocks
-        mock_sketch = MagicMock()
-        mock_sketch.add_event.return_value = "Event added"
-        mock_client = MagicMock()
-        mock_client.get_sketch.return_value = mock_sketch
-        mock_get_client.return_value = mock_client
-
-        sketch_id = 1
-        message = "Test Event No Attr"
-        date = "2023-10-26T12:00:00+00:00"
-        timestamp_desc = "Test Timestamp"
-
+    def test_add_event_no_attributes(self):
         # Call the function with default attributes (None)
-        result = add_event.fn(sketch_id, message, date, timestamp_desc)
+        result = add_event.fn(
+            1, "Test Event No Attr", "2023-10-26T12:00:00+00:00", "Test Timestamp"
+        )
 
         # Verify add_event was called with attributes containing source_short
-        mock_sketch.add_event.assert_called_with(
-            message=message,
-            date=date,
-            timestamp_desc=timestamp_desc,
+        self.mock_sketch.add_event.assert_called_with(
+            message="Test Event No Attr",
+            date="2023-10-26T12:00:00+00:00",
+            timestamp_desc="Test Timestamp",
             attributes={"source_short": DEFAULT_SOURCE_SHORT},
         )
         self.assertEqual(result["status"], "success")
 
-    @patch("timesketch_mcp_server.tools.get_timesketch_client")
-    def test_add_event_with_source_short(self, mock_get_client):
-        # Setup mocks
-        mock_sketch = MagicMock()
-        mock_sketch.add_event.return_value = "Event added"
-        mock_client = MagicMock()
-        mock_client.get_sketch.return_value = mock_sketch
-        mock_get_client.return_value = mock_client
-
-        sketch_id = 1
-        message = "Test Event Custom Source"
-        date = "2023-10-26T12:00:00+00:00"
-        timestamp_desc = "Test Timestamp"
-        attributes = {"source_short": "CustomSource"}
-
+    def test_add_event_with_source_short(self):
         # Call the function
-        result = add_event.fn(sketch_id, message, date, timestamp_desc, attributes)
+        result = add_event.fn(
+            1,
+            "Test Event Custom Source",
+            "2023-10-26T12:00:00+00:00",
+            "Test Timestamp",
+            {"source_short": "CustomSource"},
+        )
 
         # Verify source_short is NOT overwritten
-        mock_sketch.add_event.assert_called_with(
-            message=message,
-            date=date,
-            timestamp_desc=timestamp_desc,
+        self.mock_sketch.add_event.assert_called_with(
+            message="Test Event Custom Source",
+            date="2023-10-26T12:00:00+00:00",
+            timestamp_desc="Test Timestamp",
             attributes={"source_short": "CustomSource"},
         )
         self.assertEqual(result["status"], "success")
 
-    @patch("timesketch_mcp_server.tools.get_timesketch_client")
-    def test_add_event_error(self, mock_get_client):
+    def test_add_event_error(self):
         # Setup mocks to raise an exception
-        mock_sketch = MagicMock()
-
         def side_effect(**kwargs):
             raise ValueError("Invalid date format")
 
-        mock_sketch.add_event.side_effect = side_effect
-
-        mock_client = MagicMock()
-        mock_client.get_sketch.return_value = mock_sketch
-        mock_get_client.return_value = mock_client
-
-        sketch_id = 1
-        message = "Test Event Error"
-        date = "invalid-date"
-        timestamp_desc = "Test Timestamp"
+        self.mock_sketch.add_event.side_effect = side_effect
 
         # Call the function
-        result = add_event.fn(sketch_id, message, date, timestamp_desc)
+        result = add_event.fn(1, "Test Event Error", "invalid-date", "Test Timestamp")
 
         # Verify error message is returned
         self.assertEqual(result["status"], "error")
         self.assertEqual(result["error"], "Invalid date format")
 
-    @patch("timesketch_mcp_server.tools.get_timesketch_client")
-    def test_add_event_sketch_not_found(self, mock_get_client):
+    def test_add_event_sketch_not_found(self):
         # Setup mocks
-        mock_client = MagicMock()
-        mock_client.get_sketch.return_value = None
-        mock_get_client.return_value = mock_client
-
-        sketch_id = 999
-        message = "Test Event"
-        date = "2023-10-26T12:00:00+00:00"
-        timestamp_desc = "Test Timestamp"
+        self.mock_client.get_sketch.return_value = None
 
         # Call the function
-        result = add_event.fn(sketch_id, message, date, timestamp_desc)
+        result = add_event.fn(
+            999, "Test Event", "2023-10-26T12:00:00+00:00", "Test Timestamp"
+        )
 
         # Verify error message is returned
         self.assertEqual(result["status"], "error")
