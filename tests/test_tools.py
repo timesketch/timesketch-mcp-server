@@ -2,7 +2,7 @@ import unittest
 from unittest.mock import MagicMock, patch
 
 # This import should fail if add_event is not implemented
-from timesketch_mcp_server.tools import add_event, DEFAULT_SOURCE_SHORT
+from timesketch_mcp_server.tools import add_event, DEFAULT_SOURCE_SHORT, DEFAULT_TAG
 
 
 class TestAddEvent(unittest.TestCase):
@@ -47,6 +47,7 @@ class TestAddEvent(unittest.TestCase):
             date="2023-10-26T12:00:00+00:00",
             timestamp_desc="Test Timestamp",
             attributes=expected_attributes,
+            tags=[DEFAULT_TAG],
         )
 
     def test_add_event_no_attributes(self):
@@ -61,6 +62,7 @@ class TestAddEvent(unittest.TestCase):
             date="2023-10-26T12:00:00+00:00",
             timestamp_desc="Test Timestamp",
             attributes={"source_short": DEFAULT_SOURCE_SHORT},
+            tags=[DEFAULT_TAG],
         )
         self.assertEqual(result["status"], "success")
 
@@ -80,6 +82,27 @@ class TestAddEvent(unittest.TestCase):
             date="2023-10-26T12:00:00+00:00",
             timestamp_desc="Test Timestamp",
             attributes={"source_short": "CustomSource"},
+            tags=[DEFAULT_TAG],
+        )
+        self.assertEqual(result["status"], "success")
+
+    def test_add_event_with_custom_tags(self):
+        # Call the function
+        result = add_event.fn(
+            1,
+            "Test Event Custom Tags",
+            "2023-10-26T12:00:00+00:00",
+            "Test Timestamp",
+            tags=["my-tag"],
+        )
+
+        # Verify custom tags are merged with default
+        self.mock_sketch.add_event.assert_called_with(
+            message="Test Event Custom Tags",
+            date="2023-10-26T12:00:00+00:00",
+            timestamp_desc="Test Timestamp",
+            attributes={"source_short": DEFAULT_SOURCE_SHORT},
+            tags=["my-tag", DEFAULT_TAG],
         )
         self.assertEqual(result["status"], "success")
 

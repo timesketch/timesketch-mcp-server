@@ -13,6 +13,7 @@ logger = logging.getLogger(__name__)
 mcp = FastMCP(name="timesketch-tools")
 
 DEFAULT_SOURCE_SHORT = "TimesketchMCP"
+DEFAULT_TAG = "TimesketchMCP"
 
 RESERVED_CHARS = [
     "+",
@@ -497,6 +498,7 @@ def add_event(
     date: str,
     timestamp_desc: str,
     attributes: dict[str, Any] | None = None,
+    tags: list[str] | None = None,
 ) -> dict[str, Any]:
     """Add an event to the sketch.
 
@@ -506,6 +508,7 @@ def add_event(
         date: Date of the event (ISO 8601). Example: 2023-03-08T10:59:24+00:00
         timestamp_desc: Timestamp description of the event.
         attributes: Attributes of the event. Example: {'key1': 'value1', 'key2': 'value2'}
+        tags: A list of tags to add to the event.
 
     Returns:
         A dictionary indicating the result of the operation.
@@ -522,12 +525,21 @@ def add_event(
     if "source_short" not in attributes:
         attributes["source_short"] = DEFAULT_SOURCE_SHORT
 
+    if tags is None:
+        tags = []
+    else:
+        tags = tags.copy()
+
+    if DEFAULT_TAG not in tags:
+        tags.append(DEFAULT_TAG)
+
     try:
         return_value = sketch.add_event(
             message=message,
             date=date,
             timestamp_desc=timestamp_desc,
             attributes=attributes,
+            tags=tags,
         )
         return {"status": "success", "data": return_value}
     except Exception as e:
