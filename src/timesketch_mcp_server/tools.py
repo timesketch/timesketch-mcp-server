@@ -12,6 +12,9 @@ from .utils import get_timesketch_client
 logger = logging.getLogger(__name__)
 mcp = FastMCP(name="timesketch-tools")
 
+DEFAULT_SOURCE_SHORT = "TimesketchMCP"
+DEFAULT_TAG = "TimesketchMCP"
+
 RESERVED_CHARS = [
     "+",
     "-",
@@ -486,3 +489,58 @@ def do_timesketch_search(
     result_df = result_df.fillna("N/A")
 
     return result_df
+
+
+@mcp.tool()
+def add_event(
+    sketch_id: int,
+    message: str,
+    date: str,
+    timestamp_desc: str,
+    attributes: dict[str, Any] | None = None,
+    tags: list[str] | None = None,
+) -> dict[str, Any]:
+    """Add an event to the sketch.
+
+    Args:
+        sketch_id: The ID of the Timesketch sketch to add the event to.
+        message: Message of the event.
+        date: Date of the event (ISO 8601). Example: 2023-03-08T10:59:24+00:00
+        timestamp_desc: Timestamp description of the event.
+        attributes: Attributes of the event. Example: {'key1': 'value1', 'key2': 'value2'}
+        tags: A list of tags to add to the event.
+
+    Returns:
+        A dictionary indicating the result of the operation.
+    """
+    sketch = get_timesketch_client().get_sketch(sketch_id)
+    if not sketch:
+        return {"status": "error", "error": f"Sketch with ID {sketch_id} not found."}
+
+    if attributes is None:
+        attributes = {}
+    else:
+        attributes = attributes.copy()
+
+    if "source_short" not in attributes:
+        attributes["source_short"] = DEFAULT_SOURCE_SHORT
+
+    if tags is None:
+        tags = []
+    else:
+        tags = tags.copy()
+
+    if DEFAULT_TAG not in tags:
+        tags.append(DEFAULT_TAG)
+
+    try:
+        return_value = sketch.add_event(
+            message=message,
+            date=date,
+            timestamp_desc=timestamp_desc,
+            attributes=attributes,
+            tags=tags,
+        )
+        return {"status": "success", "data": return_value}
+    except Exception as e:
+        return {"status": "error", "error": str(e)}
