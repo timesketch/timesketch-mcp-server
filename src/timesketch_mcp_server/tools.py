@@ -512,6 +512,8 @@ def add_event(
 
     Returns:
         A dictionary indicating the result of the operation.
+        On success, returns {"status": "success", "data": return_value}.
+        On error, returns {"status": "error", "error": error_message}.
     """
     sketch = get_timesketch_client().get_sketch(sketch_id)
     if not sketch:
